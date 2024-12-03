@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import Header1 from "../component/Header1";
 import { Modal, Button } from 'react-bootstrap';
+import { useLocation } from 'react-router-dom';
 
 export default function OrderDetails(){
     const [showCancel, setShowCancel] = useState(false);
 
     const handleCloseCancel = () => setShowCancel(false);
     const handleShowCancel = () => setShowCancel(true);
+
+    const location = useLocation();
+    const { order, product } = location.state || {};
 
     const handleCancelOrder = () => {
         // Handle the order cancellation logic here
@@ -27,10 +31,9 @@ export default function OrderDetails(){
                         </div>
                         <div className="col-md-6 d-flex flex-column justify-content-between">
                             <div>
-                                <h2>Item Name</h2>
-                                <h4>Item Price</h4>
-                                <p>Item Description</p>
-                                <p>Item Status</p>
+                                <h5 className="card-title">Product Name: {product.name}</h5>
+                                <p className="card-text">Quantity: {order.quantity}</p>
+                                <p className="card-text">Order Status: {order.status}</p>
                             </div>
                             <div className="d-flex justify-content-end">
                                 <button className="btn btn-danger" onClick={handleShowCancel}>Cancel Order</button>

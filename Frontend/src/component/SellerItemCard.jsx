@@ -1,6 +1,6 @@
 import {Link} from 'react-router-dom';
 
-export default function SellerItemCard(){
+export default function SellerItemCard({item}){
     return (
         <div className="card mb-4" style={{ width: '100%' }}>
             <Link to="/sellerItemDetails" style={{ textDecoration: 'none', color: 'inherit' }}>
@@ -10,9 +10,9 @@ export default function SellerItemCard(){
                     </div>
                     <div className="col-md-8 d-flex flex-column">
                         <div className="card-body flex-grow-1">
-                            <h5 className="card-title">Item Name</h5>
-                            <p className="card-text">Item Description</p>
-                            <p className="card-text">Item Price</p>
+                            <h5 className="card-title">{item.name}</h5>
+                            <p className="card-text">{item.price}</p>
+                            <p className="card-text">{item.quantity}</p>
                         </div>
                     </div>
                 </div>
