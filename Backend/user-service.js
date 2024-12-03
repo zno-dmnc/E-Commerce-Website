@@ -4,11 +4,12 @@ const app = express();
 const https = require('https');
 const path = require('path');
 const fs = require('fs');
+const cors = require('cors');
 
-const sslServer = https.createServer({
-    key: fs.readFileSync(path.join(__dirname, 'cert', 'key.pem')),
-    cert: fs.readFileSync(path.join(__dirname, 'cert', 'cert.pem')),
-}, app)
+// const sslServer = https.createServer({
+//     key: fs.readFileSync(path.join(__dirname, 'cert', 'key.pem')),
+//     cert: fs.readFileSync(path.join(__dirname, 'cert', 'cert.pem')),
+// }, app)
 
 const jwt = require('jsonwebtoken');
 const authenticateToken = require('../Backend/middlewares/authMiddleware');
@@ -29,7 +30,7 @@ mongoose
 
 // Use the 'E-Commerce' database
 const db = mongoose.connection.useDb('E-Commerce');
-
+app.use(cors({origin: '*', credentials: true}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const userSchema = new Schema({
@@ -53,7 +54,7 @@ function generateAccessToken(user){
     return token;
 }
 
-app.post('/login', validateLoginInput, checkValidationResults, rateLimit, async (req, res) => {
+app.post('/login', validateLoginInput, checkValidationResults, async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email: email });
     if (!user) {
@@ -75,6 +76,7 @@ app.post('/login', validateLoginInput, checkValidationResults, rateLimit, async 
     });
 
     return res.status(200).json({
+        user: user,
         message: "Login successful",
         role: user.role,
         token: token
@@ -116,7 +118,7 @@ app.get('/all', authenticateToken, authPage(["admin"]), rateLimit, async (req, r
     }
 });
 
-app.get('/user/:id', authenticateToken, authPage(["admin", "seller"]), rateLimit, async (req, res) => {
+app.get('/user/:id', authenticateToken, async (req, res) => {
     const user = await User.findById(req.params.id);
     if(!user) {
         return res.status(404).json({ message: 'User not found' });
@@ -161,6 +163,6 @@ app.delete('/user/:id', authenticateToken, rateLimit, authPage(["admin"]), async
 
 
 
-sslServer.listen(3001, () => {
+app.listen(3001, () => {
     console.log('Server is running on port 3001');
 });

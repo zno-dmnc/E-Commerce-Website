@@ -2,6 +2,7 @@ require('dotenv').config()
 const express = require('express');
 const app = express();
 const axios = require('axios');
+const cors = require('cors');
 
 const https = require('https');
 const path = require('path');
@@ -12,10 +13,12 @@ const rateLimit = require('../Backend/middlewares/rateLimiterMiddleware');
 const authPage = require('../Backend/middlewares/rbacMiddleware');
 const { validateNewOrdersInput, validateEditOrdersInput, validateChangeOrderStatusInput, checkValidationResults} = require ('../Backend/middlewares/inputValidation');
 
-const sslServer = https.createServer({
-    key: fs.readFileSync(path.join(__dirname, 'cert', 'key.pem')),
-    cert: fs.readFileSync(path.join(__dirname, 'cert', 'cert.pem')),
-}, app)
+// const sslServer = https.createServer({
+//     key: fs.readFileSync(path.join(__dirname, 'cert', 'key.pem')),
+//     cert: fs.readFileSync(path.join(__dirname, 'cert', 'cert.pem')),
+// }, app)
+
+app.use(cors({origin: '*', credentials: true}));
 
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
@@ -41,24 +44,42 @@ const orderSchema = new Schema({
     status: String,
 })
 
+
+const productSchema = new Schema({
+    name: String,
+    price: Number,
+    quantity: Number,
+    seller_id: String,
+})
+
+const Product = db.model('products', productSchema)
+
+
 const Order = db.model('orders', orderSchema)
 
 async function getCustomerById(customerId, req) {
     try {
-        const response = await axios.get(`http://localhost:3001/user/${customerId}`, {
-
+        console.log(customerId)
+        const token = req.headers.authorization;
+        const response = await axios.get(`http://localhost:3000/users/user/${customerId}`, {
+            headers: {
+                Authorization: token,
+            },
         });
         return response.data.data;
     } catch(error) {
-        console.error(error)
+        console.log(error)
         throw new Error('Error getting customer');
     }
 }
 
 async function getProductById(productId, req) {
     try {
+        const token = req.headers.authorization;
         const response = await axios.get(`http://localhost:3002/product/${productId}`, {
-
+            headers: {
+                Authorization: token,
+            },
         });
         return response.data.data;
     } catch(error) {
@@ -69,11 +90,12 @@ async function getProductById(productId, req) {
 
 async function removeProductQuantity(productId, quantity, req) {
     try {
-        const response = await axios.put(`http://localhost:3002/update-quantity/${productId}`, {
-            quantity: quantity,
-        }, {
-
-        });
+        const token = req.headers.authorization;
+        const response = await axios.put(`http://localhost:3002/update-quantity/${productId}`, 
+            { quantity }, 
+            { headers: { Authorization: token } }
+        );
+        
         return response.data.data;
     } catch(error) {
         console.error(error)
@@ -83,14 +105,19 @@ async function removeProductQuantity(productId, quantity, req) {
 
 async function addProductQuantity(productId, quantity, req) {
     try {
+        const token = req.headers.authorization;
         const res = await axios.get(`http://localhost:3002/product/${productId}`, {
-
+            headers: {
+                Authorization: token,
+            },
         });
         const product = res.data.data;
         const newQuantity = product.quantity + quantity;
-        const response = await axios.put(`http://localhost:3002/update-product/${productId}`, {
-            quantity: newQuantity,
-        },{})
+        const response = await axios.put(`http://localhost:3002/update-quantity/${productId}`, 
+            { quantity }, 
+            { headers: { Authorization: token } }
+        );
+        
         return response.data.data;
     } catch(error) {
         console.error(error)
@@ -99,7 +126,7 @@ async function addProductQuantity(productId, quantity, req) {
 }
 
 
-app.post('/add-order', authenticateToken, rateLimit, authPage(["admin", "customer"]), validateNewOrdersInput, checkValidationResults, async (req, res) => {
+app.post('/add-order', authenticateToken, authPage(["admin", "customer"]), validateNewOrdersInput, checkValidationResults, async (req, res) => {
     const orderObj = new Order({ 
         customer_id: req.body.customer_id, 
         product_id: req.body.product_id, 
@@ -135,7 +162,7 @@ app.get('/all', authenticateToken, rateLimit, authPage(["admin"]),async (req, re
     return res.status(200).json({data: orders});
 })
 
-app.get('/customer-orders/:id', authenticateToken, rateLimit, authPage(["admin", "customer", "seller"]),async (req, res) => {
+app.get('/customer-orders/:id', authenticateToken,async (req, res) => {
     const customer = req.params.id;
     const orders = await Order.find({ customer_id: customer });
     if(orders.length === 0) {
@@ -144,9 +171,10 @@ app.get('/customer-orders/:id', authenticateToken, rateLimit, authPage(["admin",
     return res.status(200).json({data: orders});
 })
 
-app.get('/seller-orders/:id', authenticateToken, rateLimit, authPage(["admin", "seller"]),async (req, res) => {
+app.get('/seller-orders/:id', authenticateToken, authPage(["admin", "seller"]),async (req, res) => {
     const seller = req.params.id;
-    const orders = await Order.find({ seller_id: seller });
+    const products = await Product.find({ seller_id: seller });
+    const orders = await Order.find({ product_id: { $in: products.map(product => product._id) } });
     if(orders.length === 0) {
         return res.status(404).json({message: 'No orders found'});
     }
@@ -236,6 +264,6 @@ app.delete('/delete-order/:id', authenticateToken, rateLimit, authPage(["admin"]
     return res.status(200).json({message: 'Order deleted successfully'});
 })
 
-sslServer.listen(3003, () => {
+app.listen(3003, () => {
     console.log('Order service listening on port 3003');
 })

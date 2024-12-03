@@ -55,8 +55,8 @@ const validateProductQuantityInput = [
 ]
 
 const validateNewOrdersInput = [
-    body('customerId').notEmpty().withMessage('Customer ID is required').trim().escape(),
-    body('productId').notEmpty().withMessage('Product ID is required').trim().escape(),
+    body('customer_id').notEmpty().withMessage('Customer ID is required').trim().escape(),
+    body('product_id').notEmpty().withMessage('Product ID is required').trim().escape(),
     body('quantity').notEmpty().withMessage('Product Quantity is required').trim().escape(),
 ];
 
