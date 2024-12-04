@@ -30,9 +30,17 @@ export default function OrderCard({order}){
                 </div>
                 <div className="col-md-8 d-flex flex-column">
                     <div className="card-body flex-grow-1">
-                        <h5 className="card-title">Product Name: {product.name}</h5>
+                        <h5 className="card-title">{product.name}</h5>
                         <p className="card-text">Quantity: {order.quantity}</p>
-                        <p className="card-text">Order Status: {order.status}</p>
+                        <p className="card-text">
+                            Order Status: <span className={
+                                order.status === 'sent' ? 'text-success' :
+                                order.status === 'cancelled' ? 'text-danger' :
+                                order.status === 'pending' ? 'text-secondary' : ''
+                            }>
+                                {order.status}
+                            </span>
+                        </p>
                     </div>
                 </div>
             </div>

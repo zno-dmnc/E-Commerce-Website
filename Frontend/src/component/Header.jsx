@@ -2,6 +2,11 @@
 import { NavLink , useLocation } from 'react-router-dom';
 
 const Header = () => {
+    const handleLogout = () => {
+        // Handle logout logic here
+        localStorage.removeItem('token');
+        window.location.href = '/'; // Redirect to login page
+    };
 
     const location = useLocation();
     return (  
@@ -14,6 +19,7 @@ const Header = () => {
                     <img src="https://via.placeholder.com/50" alt="Orders" />
                 </NavLink>
             </div>
+            <button className="btn btn-outline-light" onClick={handleLogout}>Logout</button>
         </nav>
     )
 }

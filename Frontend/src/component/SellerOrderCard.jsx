@@ -39,12 +39,20 @@ export default function SellerOrderCard({item}){
                 </div>
                 <div className="col-md-8 d-flex flex-column">
                     <div className="card-body flex-grow-1">
-                        <h5 className="card-title">Item Name: {product.name}</h5>
+                        <h5 className="card-title"> {product.name}</h5>
                         <p className="card-text">Item Price: {product.price}</p>
-                        <p className="card-text">Order ID: {item.name} </p>
-                        <p className="card-text">Customer ID: {item.customer_id}</p>
+                        {/* <p className="card-text">Order ID: {item._id} </p> */}
+                        {/* <p className="card-text">Customer ID: {item.customer_id}</p> */}
                         <p className="card-text">Customer Name: {user.name}</p>
-                        <p className="card-text">Order Status: {item.status}</p>
+                        <p className="card-text">
+                                    Order Status: <span className={
+                                        item.status === 'sent' ? 'text-success' :
+                                        item.status === 'cancelled' ? 'text-danger' :
+                                        item.status === 'pending' ? 'text-secondary' : ''
+                                    }>
+                                        {item.status}
+                            </span>
+                        </p>
                     </div>
                 </div>
             </div>

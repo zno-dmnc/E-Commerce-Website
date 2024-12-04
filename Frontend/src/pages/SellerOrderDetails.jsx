@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Header1 from "../component/Header1";
 import { Modal, Button } from 'react-bootstrap';
 import { useLocation } from 'react-router-dom';
+import axios from "axios";
 
 export default function SellerOrderDetails() {
     const [showConfirm, setShowConfirm] = useState(false);
@@ -9,22 +10,56 @@ export default function SellerOrderDetails() {
 
     const location = useLocation();
     const { item, product, user } = location.state || {};
-
+    const token = localStorage.getItem('token');
     const handleCloseConfirm = () => setShowConfirm(false);
     const handleShowConfirm = () => setShowConfirm(true);
 
     const handleCloseCancel = () => setShowCancel(false);
     const handleShowCancel = () => setShowCancel(true);
+    console.log(item);
+    const handleConfirmOrder = async () => {
+        
+        try{
+            const response = await axios.put(`http://localhost:3000/orders/update-order-status/${item._id}`, {
+            status: 'sent'
+        }, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+            console.log(response);
+            if(response.status === 200) {
+                alert('Order Confirmed');
+            } 
+        } catch(e) {
+            console.log(e.response);
+            console.log('Error confirming order');
+        }
 
-    const handleConfirmOrder = () => {
-        // Handle the order confirmation logic here
-        console.log('Order Confirmed');
+
+
         handleCloseConfirm();
     };
 
-    const handleCancelOrder = () => {
-        // Handle the order cancellation logic here
-        console.log('Order Cancelled');
+    const handleCancelOrder = async () => {
+         
+        try{
+            const response = await axios.put(`http://localhost:3000/orders/update-order-status/${item._id}`, {
+            status: 'cancelled'
+        }, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+            console.log(response);
+            if(response.status === 200) {
+                alert('Order Confirmed');
+            } 
+        } catch(e) {
+            console.log(e.response);
+            console.log('Error confirming order');
+        }
+
         handleCloseCancel();
     };
 

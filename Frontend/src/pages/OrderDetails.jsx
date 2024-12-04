@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Header1 from "../component/Header1";
 import { Modal, Button } from 'react-bootstrap';
 import { useLocation } from 'react-router-dom';
+import axios from 'axios';
 
 export default function OrderDetails(){
     const [showCancel, setShowCancel] = useState(false);
@@ -11,10 +12,26 @@ export default function OrderDetails(){
 
     const location = useLocation();
     const { order, product } = location.state || {};
+    const token = localStorage.getItem('token');
 
-    const handleCancelOrder = () => {
+
+    const handleCancelOrder = async () => {
         // Handle the order cancellation logic here
-        console.log('Order Cancelled');
+        try{
+            const response = await axios.delete(`http://localhost:3000/orders/delete-order/${order._id}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            console.log(response);
+            if(response.status === 200){
+                alert('Order Cancelled');
+            }
+
+        }catch(e){
+            console.log(e)
+            console.log('Error cancelling order');
+        }
         handleCloseCancel();
     };
 
@@ -31,13 +48,24 @@ export default function OrderDetails(){
                         </div>
                         <div className="col-md-6 d-flex flex-column justify-content-between">
                             <div>
-                                <h5 className="card-title">Product Name: {product.name}</h5>
+                                <h5 className="card-title">{product.name}</h5>
                                 <p className="card-text">Quantity: {order.quantity}</p>
-                                <p className="card-text">Order Status: {order.status}</p>
+                                <p className="card-text">
+                                    Order Status: <span className={
+                                        order.status === 'sent' ? 'text-success' :
+                                        order.status === 'cancelled' ? 'text-danger' :
+                                        order.status === 'pending' ? 'text-secondary' : ''
+                                    }>
+                                        {order.status}
+                            </span>
+                        </p>
                             </div>
-                            <div className="d-flex justify-content-end">
-                                <button className="btn btn-danger" onClick={handleShowCancel}>Cancel Order</button>
-                            </div>
+
+                                <div className="d-flex justify-content-end">
+                                    {order.status !== 'sent' && order.status !== 'cancelled' &&(
+                                                <button className="btn btn-danger" onClick={handleShowCancel}>Cancel Order</button>
+                                            )}
+                                </div>
                         </div>
                     </div>
                 </div>

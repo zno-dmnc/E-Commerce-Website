@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 export default function SellerSent({user}) {
-    const [orders, setOrders] = useState([]);
+    const [item, setItem] = useState([]);
     const token = localStorage.getItem('token');
 
     useEffect(() => {
@@ -13,18 +13,18 @@ export default function SellerSent({user}) {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
-        }).then(response => setOrders(response.data.data))
-    })
+        }).then(response => setItem(response.data.data))
+    }, [])
 
     return (
        <div>
             <SellerHeader />
             <div className="container">
                 <div className="row">
-                    {orders.map((order) => (
-                        (order.status === "Sent") ? (
+                    {item.map((order) => (
+                        (order.status === "sent" || order.status === "cancelled") ? (
                         <div className="col-4" key={order._id}>
-                            <SellerSentCard order={order}/>
+                            <SellerSentCard item={order}/>
                         </div>) : (console.log("Not Sent"))
                     ))}
                 </div>

@@ -1,6 +1,12 @@
 import { NavLink, useLocation } from 'react-router-dom';
 
 const SellerHeader = () => {
+    const handleLogout = () => {
+        // Handle logout logic here
+        localStorage.removeItem('token');
+        window.location.href = '/'; // Redirect to login page
+    };
+
     const location = useLocation();
     return (
         <nav className="navbar navbar-expand-lg navbar-light" style={{ backgroundColor: "#FD7755", height: '70px', alignItems: 'center' }}>
@@ -16,6 +22,7 @@ const SellerHeader = () => {
                     <img src="https://via.placeholder.com/50" alt="Seller Sent" />
                 </NavLink>
             </div>
+            <button className="btn btn-outline-light" onClick={handleLogout}>Logout</button>
         </nav>
     );
 }

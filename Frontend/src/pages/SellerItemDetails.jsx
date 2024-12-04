@@ -3,29 +3,84 @@ import React, { useState } from 'react';
 
 import Header1 from "../component/Header1"
 import { Modal, Button, Form } from 'react-bootstrap';
+import { useLocation } from 'react-router-dom';
+import axios from "axios";
 
 export default function SellerItemDetails() {
     const [showUpdate, setShowUpdate] = useState(false);
     const [showDelete, setShowDelete] = useState(false);
-    const [itemName, setItemName] = useState('');
-    const [itemPrice, setItemPrice] = useState('');
-    const [itemDescription, setItemDescription] = useState('');
+    const { item } = useLocation().state || {};
+    const token = localStorage.getItem('token');
+    const [values, setValues] = useState({
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity
+    });
+    console.log(item);
+    const handleInput = (e) => {
+        setValues(prev=>({...prev, [e.target.name]: e.target.value}))
+    }
 
     const handleCloseUpdate = () => setShowUpdate(false);
     const handleShowUpdate = () => setShowUpdate(true);
 
     const handleCloseDelete = () => setShowDelete(false);
     const handleShowDelete = () => setShowDelete(true);
+    
 
-    const handleUpdateItem = () => {
-        // Handle the item update logic here
-        console.log('Item Updated:', { itemName, itemPrice, itemDescription });
+
+    console.log(values);
+
+
+
+
+    const handleUpdateItem = async() => {
+        try{
+            console.log('values to be passed, ', values);
+            const response = await axios.put(`http://localhost:3000/products/update-product/${item._id}`, values,
+                {
+                    headers: {
+                        'Authorization' : `Bearer ${token}`
+                }
+            });
+            console.log(response);
+            if(response.status === 200){
+                alert('Item Updated Successfully');
+            }
+        }catch(e){
+            console.log(e);
+            console.log('CANNOT UPDATE ITEM.', e);
+            alert('CANNOT UPDATE ITEM!');
+        }
+
+
+
         handleCloseUpdate();
     };
 
-    const handleDeleteItem = () => {
-        // Handle the item deletion logic here
-        console.log('Item Deleted');
+
+
+
+
+    const handleDeleteItem = async() => {    
+        try{
+            const response = await axios.delete(`http://localhost:3000/products/delete-product/${item._id}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            console.log(response);
+            if(response.status === 200){
+                alert('Item Deleted Successfully');
+            }
+
+
+        }catch(e){
+            console.log(e);
+            console.log('CANNOT DELETE ITEM.', e);
+            alert('CANNOT DELETE ITEM!');
+        }
+
         handleCloseDelete();
     };
 
@@ -42,9 +97,9 @@ export default function SellerItemDetails() {
                         </div>
                         <div className="col-md-6 d-flex flex-column justify-content-between">
                             <div>
-                                <h2>Item Name</h2>
-                                <h4>Item Price</h4>
-                                <p>Item Description</p>
+                            <h5 className="card-title">{item.name}</h5>
+                            <p className="card-text">{item.price}</p>
+                            <p className="card-text">{item.quantity}</p>
                             </div>
                             <div className="d-flex justify-content-end">
                                 <button className="btn btn-primary" onClick={handleShowUpdate}>Update Item</button>
@@ -68,28 +123,28 @@ export default function SellerItemDetails() {
                                 <Form.Label>Item Name</Form.Label>
                                 <Form.Control
                                     type="text"
-                                    placeholder="Enter updated item name"
-                                    value={itemName}
-                                    onChange={(e) => setItemName(e.target.value)}
+                                    placeholder={item.name}
+                                    name="name"
+                                    onChange={handleInput}
                                 />
                             </Form.Group>
                             <Form.Group controlId="formUpdateItemPrice" className="mt-3">
                                 <Form.Label>Item Price</Form.Label>
                                 <Form.Control
-                                    type="text"
-                                    placeholder="Enter updated item price"
-                                    value={itemPrice}
-                                    onChange={(e) => setItemPrice(e.target.value)}
+                                    type="number"
+                                    placeholder={item.price}
+                                    name="price"
+                                    onChange={handleInput}
                                 />
                             </Form.Group>
                             <Form.Group controlId="formUpdateItemDescription" className="mt-3">
-                                <Form.Label>Item Description</Form.Label>
+                                <Form.Label>Item Quantity</Form.Label>
                                 <Form.Control
-                                    as="textarea"
+                                    type="number"
                                     rows={3}
-                                    placeholder="Enter updated item description"
-                                    value={itemDescription}
-                                    onChange={(e) => setItemDescription(e.target.value)}
+                                    placeholder={item.quantity}
+                                    name="quantity"
+                                    onChange={handleInput}
                                 />
                             </Form.Group>
                         </Form>

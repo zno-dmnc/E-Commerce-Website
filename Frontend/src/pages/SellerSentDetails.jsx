@@ -1,6 +1,11 @@
 import Header1 from "../component/Header1"
+import { useLocation } from 'react-router-dom';
 
 export default function SellerSentDetails() {
+
+
+    const location = useLocation();
+    const { item, product, user } = location.state || {};
     return(
         <div>
         <Header1 />
@@ -13,10 +18,16 @@ export default function SellerSentDetails() {
                         </div>
                         <div className="col-md-6 d-flex flex-column justify-content-between">
                             <div>
-                                <h2>Item Name</h2>
-                                <h4>Item Price</h4>
-                                <p>Item Description</p>
-                                <p>Customer Name</p>
+                            <h2>{product.name}</h2>
+                                {/* <h4>Order ID: {item._id} </h4> */}
+                                <p>Item Price: {product.price}</p>
+                                {/* <p className="card-text">Customer ID: {item.customer_id}</p> */}
+                                <p className="card-text">Customer Name: {user.name}</p>
+                                <p className="card-text">
+                                    Order Status: <span className={item.status === 'sent' ? 'text-success' : item.status === 'cancelled' ? 'text-danger' : ''}>
+                                        {item.status}
+                                    </span>
+                                </p>
                             </div>
                         </div>
                     </div>
