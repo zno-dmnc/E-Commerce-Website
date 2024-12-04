@@ -83,8 +83,14 @@ app.post('/login', validateLoginInput, checkValidationResults, async (req, res) 
     })
 })
 
-
 app.post('/register', validateUserProfileInput, checkValidationResults, rateLimit, async (req, res) => {
+
+    const duplicate = await User.findOne({ email: req.body.email });
+    if (duplicate) {
+        return res.status(400).json({
+            message: "User already exists",
+        });
+    }
     const userObj = new User({ 
         email: req.body.email, 
         name: req.body.name, 

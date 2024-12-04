@@ -106,14 +106,7 @@ async function removeProductQuantity(productId, quantity, req) {
 async function addProductQuantity(productId, quantity, req) {
     try {
         const token = req.headers.authorization;
-        const res = await axios.get(`http://localhost:3002/product/${productId}`, {
-            headers: {
-                Authorization: token,
-            },
-        });
-        const product = res.data.data;
-        const newQuantity = product.quantity + quantity;
-        const response = await axios.put(`http://localhost:3002/update-quantity/${productId}`, 
+        const response = await axios.put(`http://localhost:3002/add-quantity/${productId}`, 
             { quantity }, 
             { headers: { Authorization: token } }
         );
@@ -254,7 +247,7 @@ app.put('/update-order-status/:id', authenticateToken, rateLimit, authPage(["adm
 
 
 
-app.delete('/delete-order/:id', authenticateToken, rateLimit, authPage(["admin"]), async (req, res) => {
+app.delete('/delete-order/:id', authenticateToken, rateLimit, async (req, res) => {
     const order = await Order.findById(req.params.id);
     if(!order) {
         return res.status(404).json({message: 'Order not found'});

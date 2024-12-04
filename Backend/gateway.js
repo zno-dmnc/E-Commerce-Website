@@ -60,6 +60,19 @@ const orderServiceProxy = createProxyMiddleware({
     },
 });
 
+const registerServiceProxy = createProxyMiddleware({
+    target: 'http://localhost:3001/register', // URL of the user service
+    changeOrigin: true,
+    secure: false,
+    onError: (err, req, res) => {
+        console.log(err);
+        console.error(`Error occurred while trying to proxy to Register:`, err.message);
+        res.status(500).json({ error: 'Proxy error occurred.' });
+    },
+});
+
+app.use('/register', registerServiceProxy); // Proxy the register request to the user service
+
 app.use('/login', loginServiceProxy); // Proxy the login request to the user service
 
 // Routes

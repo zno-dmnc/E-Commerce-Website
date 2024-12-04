@@ -76,7 +76,7 @@ const validateEditOrdersInput = [
 
 const validateChangeOrderStatusInput = [
     body('status').notEmpty().withMessage('Order status is required').trim().escape(),
-    body('status').isIn(['pending', 'delivered', 'cancelled']).withMessage('Order status must be either "pending", "delivered", or "cancelled"').trim().escape(),
+    body('status').isIn(['pending', 'sent', 'cancelled']).withMessage('Order status must be either "pending", "sent", or "cancelled"').trim().escape(),
 ];
 
 

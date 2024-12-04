@@ -149,7 +149,24 @@ app.put('/update-quantity/:id', authenticateToken, rateLimit, validateProductQua
     }
 })
 
-app.delete('/delete-product/:id', authenticateToken, rateLimit, authPage(["admin"]), async (req, res) => {
+app.put('/add-quantity/:id', authenticateToken,validateProductQuantityInput, checkValidationResults, async (req, res) => {
+    const quantity = parseInt(req.body.quantity);
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+        product.quantity += quantity;
+        await Product.findByIdAndUpdate(req.params.id, { quantity: product.quantity }, { new: true });
+        return res.status(200).json({ message: "Product quantity updated successfully", data: product });
+    } catch {
+        return res.status(400).json({
+            error: 'Error updating product quantity',
+        });
+    }
+})
+
+app.delete('/delete-product/:id', authenticateToken, rateLimit, async (req, res) => {
     try {
         const product = await Product.findByIdAndDelete(req.params.id);
         if (!product) {
@@ -162,6 +179,7 @@ app.delete('/delete-product/:id', authenticateToken, rateLimit, authPage(["admin
         });
     }
 })
+
 
 app.listen(3002, () => {
     console.log('Server is running on port 3002');
