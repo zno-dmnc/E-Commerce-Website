@@ -6,10 +6,12 @@ const https = require('https');
 const path = require('path');
 const fs = require('fs');
 
-const sslServer = https.createServer({
-    key: fs.readFileSync(path.join(__dirname, 'cert', 'key.pem')),
-    cert: fs.readFileSync(path.join(__dirname, 'cert', 'cert.pem')),
-}, app)
+const cors = require('cors');
+
+// const sslServer = https.createServer({
+//     key: fs.readFileSync(path.join(__dirname, 'cert', 'key.pem')),
+//     cert: fs.readFileSync(path.join(__dirname, 'cert', 'cert.pem')),
+// }, app)
 
 const authenticateToken = require('../Backend/middlewares/authMiddleware');
 const rateLimit = require('../Backend/middlewares/rateLimiterMiddleware');
@@ -17,6 +19,7 @@ const { validateProductInput, validateProductEditInput, validateProductQuantityI
 const authPage = require('../Backend/middlewares/rbacMiddleware');
 
 
+app.use(cors({origin: '*', credentials: true}));
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 mongoose
@@ -44,7 +47,7 @@ const productSchema = new Schema({
 const Product = db.model('products', productSchema)
 
 
-app.post('/add-product', authenticateToken, rateLimit, authPage(["admin", "seller"]), validateProductInput, checkValidationResults, async (req, res) => {
+app.post('/add-product', authenticateToken, authPage(["admin", "seller"]), validateProductInput, checkValidationResults, async (req, res) => {
     const productObj = new Product({ 
         name: req.body.name, 
         price: req.body.price, 
@@ -74,7 +77,7 @@ app.post('/add-product', authenticateToken, rateLimit, authPage(["admin", "selle
     }
 })
 
-app.get('/all', authenticateToken, authPage(["admin", "customer", "seller"]), rateLimit, async (req, res) => {
+app.get('/all', authenticateToken, authPage(["admin", "customer", "seller"]), async (req, res) => {
     const products = await Product.find();
     if(products.length === 0) {
         return res.status(404).json({message: 'No products found'});
@@ -82,7 +85,7 @@ app.get('/all', authenticateToken, authPage(["admin", "customer", "seller"]), ra
     return res.status(200).json({data: products});
 })
 
-app.get('/seller-products/:id', authenticateToken, rateLimit, authPage(["admin", "seller"]),async (req, res) => {
+app.get('/seller-products/:id', authenticateToken, authPage(["admin", "seller"]),async (req, res) => {
     const seller = req.params.id;
     const products = await Product.find({ seller_id: seller });
     if(products.length === 0) {
@@ -91,7 +94,7 @@ app.get('/seller-products/:id', authenticateToken, rateLimit, authPage(["admin",
     return res.status(200).json({data: products});
 });
 
-app.get('/product/:id', authenticateToken, rateLimit, authPage(["admin", "customer", "seller"]), async (req, res) => {
+app.get('/product/:id', authenticateToken, async (req, res) => {
     const product = await Product.findById(req.params.id);
     if(!product) {
         return res.status(404).json({message: 'Product not found'});
@@ -127,7 +130,7 @@ app.put('/update-product/:id', authenticateToken, rateLimit, authPage(["admin", 
     }
 })
 
-app.put('/update-quantity/:id', authenticateToken, rateLimit, authPage(["admin"]), validateProductQuantityInput, checkValidationResults, async (req, res) => {
+app.put('/update-quantity/:id', authenticateToken, rateLimit, validateProductQuantityInput, checkValidationResults, async (req, res) => {
     const quantity = parseInt(req.body.quantity);
     try {
         const product = await Product.findById(req.params.id);
@@ -146,7 +149,24 @@ app.put('/update-quantity/:id', authenticateToken, rateLimit, authPage(["admin"]
     }
 })
 
-app.delete('/delete-product/:id', authenticateToken, rateLimit, authPage(["admin"]), async (req, res) => {
+app.put('/add-quantity/:id', authenticateToken,validateProductQuantityInput, checkValidationResults, async (req, res) => {
+    const quantity = parseInt(req.body.quantity);
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+        product.quantity += quantity;
+        await Product.findByIdAndUpdate(req.params.id, { quantity: product.quantity }, { new: true });
+        return res.status(200).json({ message: "Product quantity updated successfully", data: product });
+    } catch {
+        return res.status(400).json({
+            error: 'Error updating product quantity',
+        });
+    }
+})
+
+app.delete('/delete-product/:id', authenticateToken, rateLimit, async (req, res) => {
     try {
         const product = await Product.findByIdAndDelete(req.params.id);
         if (!product) {
@@ -160,6 +180,7 @@ app.delete('/delete-product/:id', authenticateToken, rateLimit, authPage(["admin
     }
 })
 
-sslServer.listen(3002, () => {
+
+app.listen(3002, () => {
     console.log('Server is running on port 3002');
 });

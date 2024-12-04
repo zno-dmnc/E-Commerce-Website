@@ -55,8 +55,8 @@ const validateProductQuantityInput = [
 ]
 
 const validateNewOrdersInput = [
-    body('customerId').notEmpty().withMessage('Customer ID is required').trim().escape(),
-    body('productId').notEmpty().withMessage('Product ID is required').trim().escape(),
+    body('customer_id').notEmpty().withMessage('Customer ID is required').trim().escape(),
+    body('product_id').notEmpty().withMessage('Product ID is required').trim().escape(),
     body('quantity').notEmpty().withMessage('Product Quantity is required').trim().escape(),
 ];
 
@@ -76,7 +76,7 @@ const validateEditOrdersInput = [
 
 const validateChangeOrderStatusInput = [
     body('status').notEmpty().withMessage('Order status is required').trim().escape(),
-    body('status').isIn(['pending', 'delivered', 'cancelled']).withMessage('Order status must be either "pending", "delivered", or "cancelled"').trim().escape(),
+    body('status').isIn(['pending', 'sent', 'cancelled']).withMessage('Order status must be either "pending", "sent", or "cancelled"').trim().escape(),
 ];
 
 
