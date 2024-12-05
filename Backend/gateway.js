@@ -1,18 +1,10 @@
 const express = require('express');
-const https = require('https');
-const fs = require('fs');
-const path = require('path');
 const cors = require('cors');
 
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const app = express();
 
-// Loading SSL certificate
-// const sslServer = https.createServer({
-//     key: fs.readFileSync(path.join(__dirname, 'cert', 'key.pem')),
-//     cert: fs.readFileSync(path.join(__dirname, 'cert', 'cert.pem')),
-// }, app)
 
 
 app.use(cors({origin: '*', credentials: true}));

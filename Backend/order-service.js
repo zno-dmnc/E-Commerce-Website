@@ -4,19 +4,11 @@ const app = express();
 const axios = require('axios');
 const cors = require('cors');
 
-const https = require('https');
-const path = require('path');
-const fs = require('fs');
-
 const authenticateToken = require('../Backend/middlewares/authMiddleware');
 const rateLimit = require('../Backend/middlewares/rateLimiterMiddleware');
 const authPage = require('../Backend/middlewares/rbacMiddleware');
 const { validateNewOrdersInput, validateEditOrdersInput, validateChangeOrderStatusInput, checkValidationResults} = require ('../Backend/middlewares/inputValidation');
 
-// const sslServer = https.createServer({
-//     key: fs.readFileSync(path.join(__dirname, 'cert', 'key.pem')),
-//     cert: fs.readFileSync(path.join(__dirname, 'cert', 'cert.pem')),
-// }, app)
 
 app.use(cors({origin: '*', credentials: true}));
 
