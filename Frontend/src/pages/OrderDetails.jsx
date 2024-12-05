@@ -12,6 +12,8 @@ export default function OrderDetails(){
 
     const location = useLocation();
     const { order, product } = location.state || {};
+
+    const itemUrl = product.photo ? `http://localhost:3002${product.photo}` : '/placeholder.jpg';
     const token = localStorage.getItem('token');
 
 
@@ -44,7 +46,7 @@ export default function OrderDetails(){
                 <div className="card-body">
                     <div className="row">
                         <div className="col-md-6">
-                            <img src="https://via.placeholder.com/500/FF0000/FFFFFF?text=Item+Image" alt="Item" className="img-fluid" />
+                            <img src={itemUrl} alt="Item" className="img-fluid" />
                         </div>
                         <div className="col-md-6 d-flex flex-column justify-content-between">
                             <div>

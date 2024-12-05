@@ -7,7 +7,7 @@ export default function SellerSentCard({item}){
 
     const [product, setProduct] = useState({});
     const token = localStorage.getItem('token');
-
+    
     useEffect(() => {
         axios.get(`http://localhost:3000/products/product/${item.product_id}`, {
             headers: {
@@ -16,8 +16,8 @@ export default function SellerSentCard({item}){
         })
         .then(response => setProduct(response.data.data))
         .catch(error => console.error(error));
-    }, [])
-
+    }, [product])
+    const itemUrl = product.photo ? `http://localhost:3002${product.photo}` : '/placeholder.jpg';
     const [user, setUser] = useState({});
     useEffect(() => {
         axios.get(`http://localhost:3000/users/user/${item.customer_id}`, {
@@ -42,7 +42,7 @@ export default function SellerSentCard({item}){
             style={{ textDecoration: 'none', color: 'inherit' }}>
             <div className="row no-gutters">
                 <div className="col-md-4">
-                    <img src="https://via.placeholder.com/150" className="card-img" alt="..." />
+                    <img src={itemUrl} className="card-img" alt="..." />
                 </div>
                 <div className="col-md-8 d-flex flex-column">
                     <div className="card-body flex-grow-1">

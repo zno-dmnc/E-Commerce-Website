@@ -6,6 +6,7 @@ export default function SellerSentDetails() {
 
     const location = useLocation();
     const { item, product, user } = location.state || {};
+    const itemUrl = product.photo ? `http://localhost:3002${product.photo}` : '/placeholder.jpg';
     return(
         <div>
         <Header1 />
@@ -14,7 +15,7 @@ export default function SellerSentDetails() {
                 <div className="card-body">
                     <div className="row">
                         <div className="col-md-6">
-                            <img src="https://via.placeholder.com/500/FF0000/FFFFFF?text=Item+Image" alt="Item" className="img-fluid" />
+                            <img src={itemUrl} alt="Item" className="img-fluid" />
                         </div>
                         <div className="col-md-6 d-flex flex-column justify-content-between">
                             <div>

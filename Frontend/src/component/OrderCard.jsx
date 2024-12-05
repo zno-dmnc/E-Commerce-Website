@@ -18,7 +18,7 @@ export default function OrderCard({order}){
         .catch(error => console.error(error));
     })
 
-
+    const itemUrl = product.photo ? `http://localhost:3002${product.photo}` : '/placeholder.jpg';
     return (
         <div className="card mb-4" style={{ width: '100%' }}>
             <Link to="/orderDetails" 
@@ -26,7 +26,7 @@ export default function OrderCard({order}){
             style={{ textDecoration: 'none', color: 'inherit' }}>
             <div className="row no-gutters">
                 <div className="col-md-4">
-                    <img src="https://via.placeholder.com/150" className="card-img" alt="..." />
+                    <img src={itemUrl} className="card-img" alt="..." />
                 </div>
                 <div className="col-md-8 d-flex flex-column">
                     <div className="card-body flex-grow-1">

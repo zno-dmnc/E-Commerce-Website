@@ -16,6 +16,8 @@ export default function SellerItemDetails() {
         price: item.price,
         quantity: item.quantity
     });
+
+    const imageUrl = item.photo ? `http://localhost:3002${item.photo}` : '/placeholder.jpg';
     console.log(item);
     const handleInput = (e) => {
         setValues(prev=>({...prev, [e.target.name]: e.target.value}))
@@ -93,13 +95,13 @@ export default function SellerItemDetails() {
                 <div className="card-body">
                     <div className="row">
                         <div className="col-md-6">
-                            <img src="https://via.placeholder.com/500/FF0000/FFFFFF?text=Item+Image" alt="Item" className="img-fluid" />
+                            <img src={imageUrl} alt="Item" className="img-fluid" />
                         </div>
                         <div className="col-md-6 d-flex flex-column justify-content-between">
                             <div>
                             <h5 className="card-title">{item.name}</h5>
-                            <p className="card-text">{item.price}</p>
-                            <p className="card-text">{item.quantity}</p>
+                            <p className="card-text">Price: ₱{item.price}</p>
+                            <p className="card-text">Quantity: {item.quantity}</p>
                             </div>
                             <div className="d-flex justify-content-end">
                                 <button className="btn btn-primary" onClick={handleShowUpdate}>Update Item</button>

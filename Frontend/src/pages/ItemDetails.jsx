@@ -9,6 +9,7 @@ export default function ItemDetails({user}) {
     const location = useLocation();
     const { item } = location.state || {}; // Get the passed item from state
 
+    const itemUrl = item.photo ? `http://localhost:3002${item.photo}` : '/placeholder.jpg';
     const [showBuy, setShowBuy] = useState(false);
 
     const [purchase, setPurchase] = useState({
@@ -69,7 +70,7 @@ export default function ItemDetails({user}) {
                         <div className="row">
                             <div className="col-md-6">
                                 <img
-                                    src="https://via.placeholder.com/500/FF0000/FFFFFF?text=Item+Image"
+                                    src={itemUrl}
                                     alt="Item"
                                     className="img-fluid"
                                 />

@@ -15,42 +15,61 @@ export default function SellerSent({user}) {
         name: '',
         price: '',
         quantity: '',
-        seller_id: user._id 
+        seller_id: user._id ,
+        photo: ''
     });
 
     const handleInput = (e) => {
-        setValues(prev=>({...prev, [e.target.name]: e.target.value}))
+        const { name, value, files } = e.target;
+        setValues((prev) => ({
+            ...prev,
+            [name]: files ? files[0] : value, // If input is a file, store the file object; otherwise, store the value
+        }));
     }
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
     const handleAddItem = async (e) => {
-        // Handle the item addition logic here
-        e.preventDefault()
-
+        e.preventDefault();
+    
+        // Create a FormData object
+        const formData = new FormData();
+        formData.append("name", values.name);
+        formData.append("price", values.price);
+        formData.append("quantity", values.quantity);
+        formData.append("seller_id", values.seller_id);
+    
+        // Append the photo file
+        if (values.photo) {
+            formData.append("product", values.photo); // 'product' matches the field name in `upload.single('product')`
+        }
+    
         try {
-            console.log(values);
-            const token = localStorage.getItem('token'); // Retrieve the token from local storage
-            const response = await axios.post('http://localhost:3000/products/add-product', values, {
-                headers: {
-                    'Authorization': `Bearer ${token}` // Include the token in the request headers
+            const token = localStorage.getItem("token");
+            const response = await axios.post(
+                "http://localhost:3000/products/add-product",
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data", // Important for `form-data`
+                        Authorization: `Bearer ${token}`, // Include the token
+                    },
                 }
-            });
+            );
+    
             console.log(response);
-            if(response.status === 200) {
-                console.log(response.data)
-                alert('Item added successfully');
+            if (response.status === 200 || response.status === 201) {
+                alert("Item added successfully");
             }
+        } catch (error) {
+            console.error("CANNOT ADD ITEM:", error.response?.data || error.message);
+            alert("CANNOT ADD ITEM!");
         }
-        catch(e) {
-            console.log(e)
-            console.log('CANNOT ADD ITEM.', e);
-            alert('CANNOT ADD ITEM!');
-        }
-
+    
         handleClose();
     };
+    
 
 
     useEffect(() => {
@@ -63,7 +82,7 @@ export default function SellerSent({user}) {
             console.log(response.data)})
         .catch(error => console.error(error));
 
-    }, []);
+    }, [itemList]);
     return (
         <div>
             <SellerHeader />
@@ -106,6 +125,14 @@ export default function SellerSent({user}) {
                                     name="quantity"
                                     value={values.quantity}
                                     onChange={handleInput}
+                                />
+                            </Form.Group>
+                            <Form.Group controlId="formItemPhoto" className="mt-3">
+                                <Form.Label>Item Photo</Form.Label>
+                                <Form.Control
+                                    type="file"
+                                    name="photo"
+                                    onChange={handleInput} // Use the updated handleInput function
                                 />
                             </Form.Group>
                         </Form>

@@ -8,10 +8,30 @@ const fs = require('fs');
 
 const cors = require('cors');
 
-// const sslServer = https.createServer({
-//     key: fs.readFileSync(path.join(__dirname, 'cert', 'key.pem')),
-//     cert: fs.readFileSync(path.join(__dirname, 'cert', 'cert.pem')),
-// }, app)
+const multer = require('multer')
+
+const storage = multer.diskStorage({
+    destination: function(req, file, cb){
+        cb(null, 'uploads/')
+    },
+    filename: function(req, file, cb){
+        cb(null, file.originalname)
+    }
+})
+const upload = multer({ 
+    storage: storage,
+    fileFilter: (req, file, cb) => {
+        if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/png'){
+            cb(null, true)
+        } else {
+            cb(null, false)
+            return cb(new Error('Only .png, .jpg and .jpeg format allowed!'))
+        }
+    },
+    limits: {
+        fileSize: 1024 * 1024 * 5
+    }
+ })
 
 const authenticateToken = require('../Backend/middlewares/authMiddleware');
 const rateLimit = require('../Backend/middlewares/rateLimiterMiddleware');
@@ -20,6 +40,10 @@ const authPage = require('../Backend/middlewares/rbacMiddleware');
 
 
 app.use(cors({origin: '*', credentials: true}));
+app.use(express.json());
+// Serve static files from the "uploads" directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 mongoose
@@ -42,23 +66,29 @@ const productSchema = new Schema({
     price: Number,
     quantity: Number,
     seller_id: String,
+    photo: String,
 })
 
 const Product = db.model('products', productSchema)
 
 
-app.post('/add-product', authenticateToken, authPage(["admin", "seller"]), validateProductInput, checkValidationResults, async (req, res) => {
+app.post('/add-product', upload.single('product'), validateProductInput, checkValidationResults, authPage(["seller"]), rateLimit, async (req, res) => {
     const productObj = new Product({ 
         name: req.body.name, 
         price: req.body.price, 
         quantity: req.body.quantity,
         seller_id: req.body.seller_id,
     });
+    if (req.file) {
+        productObj.photo = `/uploads/${req.file.filename}`; // Use forward slashes
+    }    
     try {
         const product = await Product.findOne({ name: req.body.name, seller_id: req.body.seller_id });
+        
         if (product) {
-            product.quantity += req.body.quantity;
-            await Product.findByIdAndUpdate(product._id, { quantity: product.quantity }, { new: true });
+
+            const newQuantity = parseInt(product.quantity) + parseInt(req.body.quantity);
+            await Product.findByIdAndUpdate(product._id, { quantity: newQuantity }, { new: true });
             return res.status(200).json({
                 message: "Product updated successfully",
                 data: product,
@@ -68,6 +98,7 @@ app.post('/add-product', authenticateToken, authPage(["admin", "seller"]), valid
             return res.status(201).json({
                 message: "Product added successfully",
                 data: item,
+                product: req.file.path,
             });
         }
     }catch (error) {
@@ -77,7 +108,7 @@ app.post('/add-product', authenticateToken, authPage(["admin", "seller"]), valid
     }
 })
 
-app.get('/all', authenticateToken, authPage(["admin", "customer", "seller"]), async (req, res) => {
+app.get('/all', authenticateToken, authPage(["customer", "seller"]), rateLimit,async (req, res) => {
     const products = await Product.find();
     if(products.length === 0) {
         return res.status(404).json({message: 'No products found'});
@@ -85,7 +116,7 @@ app.get('/all', authenticateToken, authPage(["admin", "customer", "seller"]), as
     return res.status(200).json({data: products});
 })
 
-app.get('/seller-products/:id', authenticateToken, authPage(["admin", "seller"]),async (req, res) => {
+app.get('/seller-products/:id', authenticateToken, authPage(["seller"]), rateLimit, async (req, res) => {
     const seller = req.params.id;
     const products = await Product.find({ seller_id: seller });
     if(products.length === 0) {
@@ -102,7 +133,8 @@ app.get('/product/:id', authenticateToken, async (req, res) => {
     return res.status(200).json({data: product});
 })
 
-app.put('/update-product/:id', authenticateToken, rateLimit, authPage(["admin", "seller"]), validateProductEditInput, checkValidationResults, async (req, res) => {
+
+app.put('/update-product/:id', authenticateToken, rateLimit, authPage(["seller"]), validateProductEditInput, checkValidationResults, async (req, res) => {
     const productObj = {
         name: req.body.name,
         price: req.body.price,
