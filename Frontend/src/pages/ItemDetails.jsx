@@ -4,13 +4,15 @@ import { Modal, Button, Form } from 'react-bootstrap';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 
-export default function ItemDetails({user}) {
+export default function ItemDetails() {
     const token = localStorage.getItem('token');
     const location = useLocation();
     const { item } = location.state || {}; // Get the passed item from state
 
     const itemUrl = item.photo ? `http://localhost:3002${item.photo}` : '/placeholder.jpg';
     const [showBuy, setShowBuy] = useState(false);
+
+    const user = JSON.parse(localStorage.getItem('user'));
 
     const [purchase, setPurchase] = useState({
         customer_id: user._id,

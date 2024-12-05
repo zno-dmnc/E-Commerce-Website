@@ -7,10 +7,11 @@ import axios from 'axios';
 
 
 
-export default function SellerSent({user}) {
+export default function SellerSent() {
     const token = localStorage.getItem('token');
     const [show, setShow] = useState(false);
     const [itemList, setItemList] = useState([]);
+    const user = JSON.parse(localStorage.getItem('user'));
     const [values, setValues] = useState({
         name: '',
         price: '',

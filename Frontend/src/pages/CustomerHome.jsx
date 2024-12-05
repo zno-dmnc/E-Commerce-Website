@@ -3,7 +3,7 @@ import ItemCard from "../component/ItemCard"
 import { useEffect, useState } from "react"
 import axios from "axios"
 
-export default function CustomerHome({user}){
+export default function CustomerHome(){
     const [items, setItems] = useState([]);
     const token = localStorage.getItem('token');
 

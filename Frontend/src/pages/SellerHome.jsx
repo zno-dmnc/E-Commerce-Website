@@ -4,10 +4,11 @@ import SellerOrderCard from "../component/SellerOrderCard"
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-export default function SellerHome({user}){
+export default function SellerHome(){
     const [itemList, setItemList] = useState([]);
     const token = localStorage.getItem('token');
     const navigate = useNavigate();
+    const user = JSON.parse(localStorage.getItem('user'));
 
     useEffect(() => {
         axios.get(`http://localhost:3000/orders/seller-orders/${user._id}`, {

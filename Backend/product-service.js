@@ -166,9 +166,7 @@ app.put('/update-quantity/:id', authenticateToken, rateLimit, validateProductQua
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
-        console.log(product.quantity);
         product.quantity -= quantity;
-        console.log(product.quantity);
         await Product.findByIdAndUpdate(req.params.id, { quantity: product.quantity }, { new: true });
         return res.status(200).json({ message: "Product quantity updated successfully", data: product });
     } catch {

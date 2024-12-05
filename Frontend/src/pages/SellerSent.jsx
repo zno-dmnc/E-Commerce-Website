@@ -4,9 +4,11 @@ import SellerSentCard from "../component/SellerSentCard"
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-export default function SellerSent({user}) {
+export default function SellerSent() {
     const [item, setItem] = useState([]);
     const token = localStorage.getItem('token');
+
+    const user = JSON.parse(localStorage.getItem('user'));
 
     useEffect(() => {
         axios.get(`http://localhost:3000/orders/seller-orders/${user._id}`, {

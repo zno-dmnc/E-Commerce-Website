@@ -4,10 +4,10 @@ import Header from "../component/header"
 import { useEffect, useState } from "react"
 import axios from "axios"
 
-export default function CustomerOrders({user}){
+export default function CustomerOrders(){
     const [orders, setOrders] = useState([]);
     const token = localStorage.getItem('token');
-    console.log(user)
+    const user = JSON.parse(localStorage.getItem('user'));
     useEffect(() => {
         axios.get(`http://localhost:3000/orders/customer-orders/${user._id}`, {
             headers: {
