@@ -1,25 +1,89 @@
 
 import SellerHeader from "../component/SellerHeader"
 import SellerItemCard from "../component/SellerItemCard"
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
+import axios from 'axios';
+
 
 
 export default function SellerSent() {
+    const token = localStorage.getItem('token');
     const [show, setShow] = useState(false);
-    const [itemName, setItemName] = useState('');
-    const [itemPrice, setItemPrice] = useState('');
-    const [itemDescription, setItemDescription] = useState('');
+    const [itemList, setItemList] = useState([]);
+    const user = JSON.parse(localStorage.getItem('user'));
+    const [values, setValues] = useState({
+        name: '',
+        price: '',
+        quantity: '',
+        seller_id: user._id ,
+        photo: ''
+    });
+
+    const handleInput = (e) => {
+        const { name, value, files } = e.target;
+        setValues((prev) => ({
+            ...prev,
+            [name]: files ? files[0] : value, // If input is a file, store the file object; otherwise, store the value
+        }));
+    }
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
-    const handleAddItem = () => {
-        // Handle the item addition logic here
-        console.log('Item Added:', { itemName, itemPrice, itemDescription });
+    const handleAddItem = async (e) => {
+        e.preventDefault();
+    
+        // Create a FormData object
+        const formData = new FormData();
+        formData.append("name", values.name);
+        formData.append("price", values.price);
+        formData.append("quantity", values.quantity);
+        formData.append("seller_id", values.seller_id);
+    
+        // Append the photo file
+        if (values.photo) {
+            formData.append("product", values.photo); // 'product' matches the field name in `upload.single('product')`
+        }
+    
+        try {
+            const token = localStorage.getItem("token");
+            const response = await axios.post(
+                "http://localhost:3000/products/add-product",
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data", // Important for `form-data`
+                        Authorization: `Bearer ${token}`, // Include the token
+                    },
+                }
+            );
+    
+            console.log(response);
+            if (response.status === 200 || response.status === 201) {
+                alert("Item added successfully");
+            }
+        } catch (error) {
+            console.error("CANNOT ADD ITEM:", error.response?.data || error.message);
+            alert("CANNOT ADD ITEM!");
+        }
+    
         handleClose();
     };
-    const card = Array(12).fill(0);
+    
+
+
+    useEffect(() => {
+        axios.get(`http://localhost:3000/products/seller-products/${user._id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => {setItemList(response.data.data) 
+            console.log(response.data)})
+        .catch(error => console.error(error));
+
+    }, [itemList]);
     return (
         <div>
             <SellerHeader />
@@ -39,8 +103,9 @@ export default function SellerSent() {
                                 <Form.Control
                                     type="text"
                                     placeholder="Enter item name"
-                                    value={itemName}
-                                    onChange={(e) => setItemName(e.target.value)}
+                                    name="name"
+                                    value={values.name}
+                                    onChange={handleInput}
                                 />
                             </Form.Group>
                             <Form.Group controlId="formItemPrice" className="mt-3">
@@ -48,18 +113,27 @@ export default function SellerSent() {
                                 <Form.Control
                                     type="text"
                                     placeholder="Enter item price"
-                                    value={itemPrice}
-                                    onChange={(e) => setItemPrice(e.target.value)}
+                                    name="price"
+                                    value={values.price}
+                                    onChange={handleInput}
                                 />
                             </Form.Group>
-                            <Form.Group controlId="formItemDescription" className="mt-3">
-                                <Form.Label>Item Description</Form.Label>
+                            <Form.Group controlId="formItemQuantity" className="mt-3">
+                                <Form.Label>Item Quantity</Form.Label>
                                 <Form.Control
-                                    as="textarea"
-                                    rows={3}
-                                    placeholder="Enter item description"
-                                    value={itemDescription}
-                                    onChange={(e) => setItemDescription(e.target.value)}
+                                    type="Number"
+                                    placeholder="Enter item quantity"
+                                    name="quantity"
+                                    value={values.quantity}
+                                    onChange={handleInput}
+                                />
+                            </Form.Group>
+                            <Form.Group controlId="formItemPhoto" className="mt-3">
+                                <Form.Label>Item Photo</Form.Label>
+                                <Form.Control
+                                    type="file"
+                                    name="photo"
+                                    onChange={handleInput} // Use the updated handleInput function
                                 />
                             </Form.Group>
                         </Form>
@@ -82,13 +156,18 @@ export default function SellerSent() {
 
             <div className="container">
                 <div className="row">
-                    {card.map((_, index) => (
-                        <div className="col-4" key={index}>
-                            <SellerItemCard />
-                        </div>
-                    ))}
+                    {itemList.length > 0 ? (
+                        itemList.map((item) => (
+                            <div className="col-4" key={item._id}>
+                                <SellerItemCard item={item} />
+                            </div>
+                        ))
+                    ) : (
+                        <p>No items available</p>
+                    )}
                 </div>
             </div>
+
         </div>
     )
 
